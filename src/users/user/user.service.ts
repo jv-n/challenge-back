@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma, PrismaClient } from '@prisma/client';
+import { Cart, Prisma, PrismaClient } from '@prisma/client';
 import { PrismaService } from 'src/database/PrimsaService';
 import { UserDTO } from './user.dto';
 import { CartDTO } from './cart.dto';
@@ -116,6 +116,7 @@ export class UserService {
 
     async deletefromCart(body: CartDTO)
     {
+
         const item = await this.prisma.productsOnCart.findUnique({
             where:{
                 cartId_productId: {
@@ -126,6 +127,10 @@ export class UserService {
         })
 
         if(!item){throw new Error("Item not in cart")};
+       
+        if(item.prod_amount<body.quantity){
+            throw new Error("Removing more than existing in cart")
+        }
 
         await this.prisma.product.update({
             where: {
